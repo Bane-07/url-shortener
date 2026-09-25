@@ -12,3 +12,4 @@ class URL(Base):
     original_url = Column(Text, nullable=False)
     short_code = Column(String(10), unique=True, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    expires_at = Column(DateTime, nullable=True)
