@@ -4,7 +4,7 @@ from fastapi.responses import RedirectResponse
 from fastapi import HTTPException
 from app.database import get_db
 from app import crud, schemas
-from app.cache import get_cached_url , cached_url
+from app.cache import get_cached_url , cache_url
 from app.crud import get_url_by_short_code
 from app.rate_limiter import is_rate_limited
 from datetime import datetime
@@ -36,7 +36,7 @@ def shorten_url(
 @app.get("/{short_code}")
 def redirect_url(short_code: str, db: Session = Depends(get_db)):
 
-    cached_url(short_code, url.original_url, url.expires_at)
+    cached_url = get_cached_url(short_code)
 
     if cached_url:
         return RedirectResponse(cached_url)
@@ -44,17 +44,17 @@ def redirect_url(short_code: str, db: Session = Depends(get_db)):
     url = get_url_by_short_code(db, short_code)
 
     if not url:
-            raise HTTPException(
+        raise HTTPException(
             status_code=404,
             detail="Short URL not found"
         )
 
     if url.expires_at and url.expires_at < datetime.utcnow():
-            raise HTTPException(
+        raise HTTPException(
             status_code=410,
             detail="Short URL has expired"
-    )
+        )
 
-    cached_url(short_code, url.original_url)
+    cache_url(short_code, url.original_url, url.expires_at)
 
     return RedirectResponse(url.original_url)

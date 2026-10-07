@@ -20,7 +20,7 @@ def get_cached_url(short_code: str):
         return None
 
 
-def cached_url(
+def cache_url(
     short_code: str,
     original_url: str,
     expires_at=None,
